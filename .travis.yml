@@ -1,8 +1,7 @@
 language: android
 before_install:
-    - chmod +x ./gradlew
+    - chmod +x gradlew
 android:
 components: [ 'tools', 'build-tools-24.0.0', 'extra-android-m2repository', 'android-24' ]
     jdk: oraclejdk8
 
-    
