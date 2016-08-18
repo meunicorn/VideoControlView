@@ -104,7 +104,9 @@ public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.C
     }
 
     @Override
-    public int getBufferPercentage() {
+    public long getCachePercentage() {
         return 0;
     }
+
+
 }

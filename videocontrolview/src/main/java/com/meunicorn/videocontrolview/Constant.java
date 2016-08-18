@@ -5,4 +5,6 @@ package com.meunicorn.videocontrolview;
  */
 public class Constant {
     public final static int MESSAGE_SHOW_PROGRESS = 1100;
+    public final static int MESSAGE_UPDATE_ICON=1001;
+    public final static int MESSAGE_IS_PLAYING=1000;
 }

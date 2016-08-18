@@ -4,13 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
 import com.meunicorn.mvpvideoplayer.BaseActivity;
 import com.meunicorn.mvpvideoplayer.R;
@@ -22,7 +22,7 @@ import java.util.List;
 
 import rx.functions.Action1;
 
-public class MainActivity extends BaseActivity implements MainMvpView {
+public class MainActivity extends BaseActivity implements MainMvpView, View.OnClickListener {
     private RecyclerView rvVideo;
     private FloatingActionButton fab;
     private List<Video.DataEntity.ListEntity> listEntityList = new ArrayList<>();
@@ -38,22 +38,16 @@ public class MainActivity extends BaseActivity implements MainMvpView {
         presenter.attachView(this);
         rvVideo = (RecyclerView) findViewById(R.id.rv_video);
         fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        fab.setOnClickListener(this);
         adapter = new VideoRvAdapter(this, listEntityList);
         rvVideo.setLayoutManager(new LinearLayoutManager(this));
         rvVideo.setAdapter(adapter);
         adapter.onItemClick().subscribe(new Action1<Video.DataEntity.ListEntity>() {
             @Override
             public void call(Video.DataEntity.ListEntity listEntity) {
-                Intent intent=new Intent(MainActivity.this, VideoDetailActivity.class);
-                intent.putExtra("url",listEntity.getVideo_url());
-                intent.putExtra("title",listEntity.getTitle());
+                Intent intent = new Intent(MainActivity.this, VideoDetailActivity.class);
+                intent.putExtra("url", listEntity.getVideo_url());
+                intent.putExtra("title", listEntity.getTitle());
                 startActivity(intent);
             }
         });
@@ -93,5 +87,18 @@ public class MainActivity extends BaseActivity implements MainMvpView {
     @Override
     public void showGetError(String error) {
         Snackbar.make(rvVideo, error, Snackbar.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.fab:
+                if (rvVideo.getLayoutManager() instanceof LinearLayoutManager) {
+                    rvVideo.setLayoutManager(new GridLayoutManager(this, 2));
+                } else {
+                    rvVideo.setLayoutManager(new LinearLayoutManager(this));
+                }
+                break;
+        }
     }
 }
