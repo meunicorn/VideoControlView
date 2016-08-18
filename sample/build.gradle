@@ -36,5 +36,6 @@ dependencies {
     compile 'tv.danmaku.ijk.media:ijkplayer-java:0.6.0'
     compile 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.6.0'
     compile 'com.jakewharton.timber:timber:4.2.0'
+    compile 'tv.danmaku.ijk.media:ijkplayer-x86:0.6.0'
     compile project(':videocontrolview')
 }

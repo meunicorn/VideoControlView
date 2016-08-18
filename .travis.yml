@@ -1,7 +1,7 @@
 language: android
+before_install:
+    - chmod +x gradlew
 android:
-  before_install:
-     - chmod +x gradlew
   components:
     - build-tools-24.0.1
     - android-24

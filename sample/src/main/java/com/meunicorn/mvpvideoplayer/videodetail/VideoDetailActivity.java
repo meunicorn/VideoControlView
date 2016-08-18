@@ -29,7 +29,6 @@ public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.C
         Intent intent = getIntent();
         videoUrl = intent.getStringExtra("url");
         title = intent.getStringExtra("title");
-
         initView();
         try {
             player.setDataSource(videoUrl);
@@ -85,12 +84,27 @@ public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.C
     }
 
     @Override
-    public void seekTo(int progress) {
+    public void seekTo(long progress) {
         player.seekTo(progress);
     }
 
     @Override
     public boolean isPlaying() {
         return player.isPlaying();
+    }
+
+    @Override
+    public long getCurrentPosition() {
+        return player.getCurrentPosition();
+    }
+
+    @Override
+    public long getDuration() {
+        return player.getDuration();
+    }
+
+    @Override
+    public int getBufferPercentage() {
+        return 0;
     }
 }
