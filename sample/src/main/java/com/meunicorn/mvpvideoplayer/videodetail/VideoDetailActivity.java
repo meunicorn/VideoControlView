@@ -2,12 +2,15 @@ package com.meunicorn.mvpvideoplayer.videodetail;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.widget.FrameLayout;
 
 import com.meunicorn.mvpvideoplayer.BaseActivity;
 import com.meunicorn.mvpvideoplayer.R;
+import com.meunicorn.mvpvideoplayer.main.bean.Video;
 import com.meunicorn.videocontrolview.VideoControlView;
 
 import java.io.IOException;
@@ -29,6 +32,7 @@ public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.C
         Intent intent = getIntent();
         videoUrl = intent.getStringExtra("url");
         title = intent.getStringExtra("title");
+        getSupportActionBar().hide();
         initView();
         try {
             player.setDataSource(videoUrl);
@@ -108,5 +112,14 @@ public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.C
         return 0;
     }
 
+    @Override
+    public View getOtherView() {
+        return flOtherView;
+    }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        player.release();
+    }
 }

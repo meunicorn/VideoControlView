@@ -2,17 +2,19 @@ package com.meunicorn.videocontrolview;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 /**
  * Created by Fancy on 2016/8/17.
@@ -20,7 +22,7 @@ import android.widget.Toast;
 public class VideoControlView extends FrameLayout implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
     private String TAG = getClass().getSimpleName();
     private View controlView;
-    private View view;
+    private View videoView;
     private VideoController controller;
     private SeekBar sbProgress;
     private ImageView ivPlay;
@@ -31,7 +33,7 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
     private TextView tvEndTime;
     private MessageHandler messageHandler = new MessageHandler();
     private boolean isPlaying = false;
-
+    private boolean isShowing = false;
     private boolean isDragging = false;
 
     /**
@@ -77,12 +79,12 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
     /**
      * Attach video view.
      *
-     * @param view       the view
+     * @param videoView  the view
      * @param controller the controller
      */
-    public void attachVideoView(View view, VideoController controller) {
-        addView(view, 0);
-        this.view = view;
+    public void attachVideoView(View videoView, VideoController controller) {
+        addView(videoView, 0);
+        this.videoView = videoView;
         this.controller = controller;
         startListener();
 
@@ -99,6 +101,28 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
             doPauseResume();
         } else if (view.getId() == R.id.iv_back) {
 
+        } else if (view.getId() == R.id.iv_fullscreen) {
+            doToggleFullscreen();
+        }
+    }
+
+    private void doToggleFullscreen() {
+        if (!isLandScape()) {
+            ((Activity) getContext()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            LinearLayout.LayoutParams videoFullscreenLayoutParam =
+                    new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            setLayoutParams(videoFullscreenLayoutParam);
+            controller.getOtherView().setVisibility(View.GONE);
+            int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+            ((Activity) getContext()).getWindow().getDecorView().setSystemUiVisibility(uiOptions);
+        } else {
+            final float scale = getResources().getDisplayMetrics().density;
+            int pixels = (int) (220 * scale + 0.5f);
+            LinearLayout.LayoutParams original = new LinearLayout.LayoutParams(
+                    LayoutParams.MATCH_PARENT, pixels);
+            this.setLayoutParams(original);
+            ((Activity) getContext()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            controller.getOtherView().setVisibility(View.VISIBLE);
         }
     }
 
@@ -144,6 +168,22 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         if (tvCurrentTime != null)
             tvCurrentTime.setText(stringForTime(position));
         return position;
+    }
+
+
+    public boolean isLandScape() {
+        // 横屏 true , 竖屏 false
+        Configuration mConfiguration = this.getResources().getConfiguration(); // 获取设置的配置信息
+        int ori = mConfiguration.orientation; // 获取屏幕方向
+
+        if (ori == Configuration.ORIENTATION_LANDSCAPE) {
+            // 横屏
+            return true;
+        } else if (ori == Configuration.ORIENTATION_PORTRAIT) {
+            // 竖屏
+            return false;
+        }
+        return false;
     }
 
     @Override
@@ -240,6 +280,8 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
          * @return the cache percentage
          */
         long getCachePercentage();
+
+        View getOtherView();
 
     }
 
