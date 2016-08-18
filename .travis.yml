@@ -3,9 +3,10 @@ before_install:
     - chmod +x gradlew
 android:
   components:
+    - tools
+    - tools
+    - platform-tools
     - build-tools-24.0.1
-    - tools
-    - tools
     - android-24
     - extra-android-support
     - extra-android-m2repository
