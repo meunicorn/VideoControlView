@@ -7,6 +7,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.meunicorn.mvpvideoplayer.BaseActivity;
@@ -16,6 +17,7 @@ import com.meunicorn.videocontrolview.VideoControlView;
 import java.io.IOException;
 
 import timber.log.Timber;
+import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
 public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.Callback, VideoControlView.VideoController {
@@ -57,6 +59,12 @@ public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.C
 
     private void initVideo() {
         player = new IjkMediaPlayer();
+        player.setOnCompletionListener(new IMediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(IMediaPlayer iMediaPlayer) {
+                vcvControl.setVideoCompleted();
+            }
+        });
         svVideo = new SurfaceView(this);
         vcvControl.attachVideoView(svVideo, this);
         SurfaceHolder holder = svVideo.getHolder();
@@ -131,8 +139,9 @@ public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.C
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+        player.stop();
         player.release();
+        super.onDestroy();
     }
 
     @Override

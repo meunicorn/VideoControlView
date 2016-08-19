@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -33,10 +34,13 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
     private ImageView ivFullscreen;
     private TextView tvCurrentTime;
     private TextView tvEndTime;
+    private RelativeLayout rlshare;
+    private View vDim;
     private MessageHandler messageHandler = new MessageHandler();
     private boolean isPlaying = false;
     private boolean isShowing = false;
     private boolean isDragging = false;
+    private boolean isCompleted = false;
     private int videoViewHeight = 0;
     private int defaultSystemUiVisiblity = 0;
     private long defaultTime = 3000;
@@ -71,6 +75,8 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         tvCurrentTime = (TextView) controlView.findViewById(R.id.tv_current_time);
         tvEndTime = (TextView) controlView.findViewById(R.id.tv_end_time);
         sbProgress = (SeekBar) controlView.findViewById(R.id.sb_progress);
+        rlshare = (RelativeLayout) controlView.findViewById(R.id.rl_share);
+        vDim = controlView.findViewById(R.id.v_dim);
         sbProgress.setMax(1000);
         sbProgress.setOnSeekBarChangeListener(this);
         ivPlay.setOnClickListener(this);
@@ -196,7 +202,6 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
             tvCurrentTime.setText(stringForTime(position));
         return position;
     }
-
 
     public boolean isLandScape() {
         // 横屏 true , 竖屏 false
@@ -328,6 +333,10 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         void onBackClick();
     }
 
+    public void setVideoCompleted() {
+        isCompleted = true;
+    }
+
     /**
      * The type Message handler.
      */
@@ -343,7 +352,19 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
                 case Constant.MESSAGE_IS_PLAYING:
                     isPlaying = controller.isPlaying();
                     updatePlayIcon();
+                    if (isLandScape()&&isCompleted) {
+                        rlshare.setVisibility(VISIBLE);
+                    } else {
+                        rlshare.setVisibility(GONE);
+                    }
+                    if (isPlaying) {
+                        isCompleted = false;
+                        vDim.setVisibility(GONE);
+                    } else {
+                        vDim.setVisibility(VISIBLE);
+                    }
                     sendEmptyMessage(Constant.MESSAGE_IS_PLAYING);
+                    Log.i(TAG, "handleMessage: current: " + controller.getCurrentPosition() + "  /  " + controller.getDuration());
                     break;
             }
         }
