@@ -8,77 +8,78 @@
         android:layout_height="match_parent"
         android:layout_margin="10dp">
 
-    <ImageView
-        android:id="@+id/iv_back"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:src="@drawable/ic_index_video_back" />
-
-    <ImageView
-        android:id="@+id/iv_share"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:padding="8dp"
-        android:src="@drawable/ic_index_video_share" />
-
-    <ImageView
-        android:id="@+id/iv_play"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:padding="8dp"
-        android:src="@drawable/ic_index_video_play" />
-
-    <LinearLayout
-        android:id="@+id/ll_progressbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="6dp">
-
-        <TextView
-            android:id="@+id/tv_current_time"
+        <ImageView
+            android:id="@+id/iv_back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="00:00"
-            android:textColor="#ffffff"
-            android:textSize="10sp" />
-
-        <SeekBar
-            android:id="@+id/sb_progress"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="6dp"
-            android:layout_marginRight="6dp"
-            android:layout_weight="1"
-            android:maxHeight="4dp"
-            android:minHeight="4dp"
-            android:paddingBottom="8dp"
-            android:paddingTop="8dp"
-            android:progressDrawable="@drawable/video_play_progressbar"
-            android:thumb="@drawable/ic_index_video_seekbar_circle"
-            android:thumbOffset="0dp" />
-
-        <TextView
-            android:id="@+id/tv_end_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="6dp"
-            android:text="00:00"
-            android:textColor="#ffffff"
-            android:textSize="10sp" />
+            android:padding="8dp"
+            android:src="@drawable/ic_index_video_back" />
 
         <ImageView
-            android:id="@+id/iv_fullscreen"
+            android:id="@+id/iv_share"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:layout_marginLeft="10dp"
             android:padding="8dp"
-            android:src="@drawable/ic_index_video_fullscreen" />
-    </LinearLayout>
-</RelativeLayout></FrameLayout>
+            android:src="@drawable/ic_index_video_share" />
+
+        <ImageView
+            android:id="@+id/iv_play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:padding="8dp"
+            android:src="@drawable/ic_index_video_play" />
+
+        <LinearLayout
+            android:id="@+id/ll_progressbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="6dp">
+
+            <TextView
+                android:id="@+id/tv_current_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="00:00"
+                android:textColor="#ffffff"
+                android:textSize="10sp" />
+
+            <SeekBar
+                android:id="@+id/sb_progress"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="6dp"
+                android:layout_marginRight="6dp"
+                android:layout_weight="1"
+                android:maxHeight="4dp"
+                android:minHeight="4dp"
+                android:paddingBottom="8dp"
+                android:paddingTop="8dp"
+                android:progressDrawable="@drawable/video_play_progressbar"
+                android:thumb="@drawable/ic_index_video_seekbar_circle"
+                android:thumbOffset="0dp" />
+
+            <TextView
+                android:id="@+id/tv_end_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="6dp"
+                android:text="00:00"
+                android:textColor="#ffffff"
+                android:textSize="10sp" />
+
+            <ImageView
+                android:id="@+id/iv_fullscreen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginLeft="10dp"
+                android:padding="8dp"
+                android:src="@drawable/ic_index_video_fullscreen" />
+        </LinearLayout>
+    </RelativeLayout>
+</FrameLayout>

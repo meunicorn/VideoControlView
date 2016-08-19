@@ -6,7 +6,9 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.app.AlertDialog;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +21,7 @@ import android.widget.TextView;
 /**
  * Created by Fancy on 2016/8/17.
  */
-public class VideoControlView extends FrameLayout implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+public class VideoControlView extends FrameLayout implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, View.OnSystemUiVisibilityChangeListener {
     private String TAG = getClass().getSimpleName();
     private View controlView;
     private View videoView;
@@ -35,6 +37,9 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
     private boolean isPlaying = false;
     private boolean isShowing = false;
     private boolean isDragging = false;
+    private int videoViewHeight = 0;
+    private int defaultSystemUiVisiblity = 0;
+    private long defaultTime = 3000;
 
     /**
      * Instantiates a new Video control view.
@@ -73,7 +78,7 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         ivShare.setOnClickListener(this);
         ivShare.setOnClickListener(this);
         ivFullscreen.setOnClickListener(this);
-
+        setOnSystemUiVisibilityChangeListener(this);
     }
 
     /**
@@ -87,6 +92,8 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         this.videoView = videoView;
         this.controller = controller;
         startListener();
+        videoViewHeight = getLayoutParams().height;
+        defaultSystemUiVisiblity = getSystemUiVisibility();
 
     }
 
@@ -95,14 +102,29 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         messageHandler.sendEmptyMessage(Constant.MESSAGE_IS_PLAYING);
     }
 
+    public void show() {
+        show(defaultTime);
+    }
+
+    public void show(long time) {
+
+    }
+
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.iv_play) {
             doPauseResume();
         } else if (view.getId() == R.id.iv_back) {
-
+            if (isLandScape()) {
+                doToggleFullscreen();
+            } else {
+                controller.onBackClick();
+            }
         } else if (view.getId() == R.id.iv_fullscreen) {
             doToggleFullscreen();
+        } else if (view.getId() == R.id.iv_share) {
+            new AlertDialog.Builder(getContext()).setMessage("what").setTitle("hell").show();
+            Log.i(TAG, "onClick: ui " + getSystemUiVisibility());
         }
     }
 
@@ -113,16 +135,21 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
                     new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             setLayoutParams(videoFullscreenLayoutParam);
             controller.getOtherView().setVisibility(View.GONE);
-            int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-            ((Activity) getContext()).getWindow().getDecorView().setSystemUiVisibility(uiOptions);
+            View decorView = ((Activity) getContext()).getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         } else {
-            final float scale = getResources().getDisplayMetrics().density;
-            int pixels = (int) (220 * scale + 0.5f);
             LinearLayout.LayoutParams original = new LinearLayout.LayoutParams(
-                    LayoutParams.MATCH_PARENT, pixels);
+                    LayoutParams.MATCH_PARENT, videoViewHeight);
             this.setLayoutParams(original);
             ((Activity) getContext()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             controller.getOtherView().setVisibility(View.VISIBLE);
+            View decorView = ((Activity) getContext()).getWindow().getDecorView();
+            decorView.setSystemUiVisibility(defaultSystemUiVisiblity);
         }
     }
 
@@ -226,6 +253,21 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         }
     }
 
+    @Override
+    public void onSystemUiVisibilityChange(int i) {
+        if (isLandScape()) {
+            View decorView = ((Activity) getContext()).getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        } else {
+            View decorView = ((Activity) getContext()).getWindow().getDecorView();
+            decorView.setSystemUiVisibility(defaultSystemUiVisiblity);
+        }
+    }
 
     /**
      * The interface Video controller.
@@ -283,6 +325,7 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
 
         View getOtherView();
 
+        void onBackClick();
     }
 
     /**
@@ -301,6 +344,7 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
                     isPlaying = controller.isPlaying();
                     updatePlayIcon();
                     sendEmptyMessage(Constant.MESSAGE_IS_PLAYING);
+                    break;
             }
         }
     }

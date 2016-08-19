@@ -2,19 +2,20 @@ package com.meunicorn.mvpvideoplayer.videodetail;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.VideoView;
 
 import com.meunicorn.mvpvideoplayer.BaseActivity;
 import com.meunicorn.mvpvideoplayer.R;
-import com.meunicorn.mvpvideoplayer.main.bean.Video;
 import com.meunicorn.videocontrolview.VideoControlView;
 
 import java.io.IOException;
 
+import timber.log.Timber;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
 public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.Callback, VideoControlView.VideoController {
@@ -44,6 +45,12 @@ public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.C
 
     private void initView() {
         flOtherView = (FrameLayout) findViewById(R.id.fl_otherview);
+        flOtherView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new AlertDialog.Builder(VideoDetailActivity.this).setMessage("hello").setTitle("what").show();
+            }
+        });
         vcvControl = (VideoControlView) findViewById(R.id.vcv_control);
         initVideo();
     }
@@ -118,8 +125,18 @@ public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.C
     }
 
     @Override
+    public void onBackClick() {
+        onBackPressed();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         player.release();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 }
