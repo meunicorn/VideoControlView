@@ -6,10 +6,9 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.AlertDialog;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -20,9 +19,10 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 /**
- * Created by Fancy on 2016/8/17.
+ * Created by Fancy on 2016/8/17
+ * 如果要设置横屏状态下播放结束时显示分享界面，请在Activity/Fragment中调用此类中的方法 setVideoCompleted()
  */
-public class VideoControlView extends FrameLayout implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, View.OnSystemUiVisibilityChangeListener {
+public class VideoControlView extends FrameLayout implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, View.OnSystemUiVisibilityChangeListener, View.OnTouchListener {
     private String TAG = getClass().getSimpleName();
     private View controlView;
     private View videoView;
@@ -35,9 +35,10 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
     private TextView tvCurrentTime;
     private TextView tvEndTime;
     private RelativeLayout rlshare;
+    private RelativeLayout rlController;
+    private LinearLayout llProgressbar;
     private View vDim;
     private MessageHandler messageHandler = new MessageHandler();
-    private boolean isPlaying = false;
     private boolean isShowing = false;
     private boolean isDragging = false;
     private boolean isCompleted = false;
@@ -76,6 +77,9 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         tvEndTime = (TextView) controlView.findViewById(R.id.tv_end_time);
         sbProgress = (SeekBar) controlView.findViewById(R.id.sb_progress);
         rlshare = (RelativeLayout) controlView.findViewById(R.id.rl_share);
+        rlController = (RelativeLayout) controlView.findViewById(R.id.rl_controller);
+        llProgressbar = (LinearLayout) controlView.findViewById(R.id.ll_progressbar);
+
         vDim = controlView.findViewById(R.id.v_dim);
         sbProgress.setMax(1000);
         sbProgress.setOnSeekBarChangeListener(this);
@@ -100,20 +104,48 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         startListener();
         videoViewHeight = getLayoutParams().height;
         defaultSystemUiVisiblity = getSystemUiVisibility();
-
+        show();
     }
 
     private void startListener() {
         messageHandler.sendEmptyMessage(Constant.MESSAGE_SHOW_PROGRESS);
         messageHandler.sendEmptyMessage(Constant.MESSAGE_IS_PLAYING);
+        setOnTouchListener(this);
     }
 
     public void show() {
         show(defaultTime);
     }
 
-    public void show(long time) {
+    public void show(long timeOut) {
+        if (isShowing) {
+            hideUnsupportedUI();
+            return;
+        }
+        if (!isCompleted) {
+            //未播放完时的show()
+            setVisible(ivBack, ivShare, ivPlay, llProgressbar, rlController, vDim);
+        }
+        if (timeOut > 0) {
+            if (!isCompleted) {
+                messageHandler.removeMessages(Constant.MESSAGE_FADE_OUT);
+                messageHandler.sendEmptyMessageDelayed(Constant.MESSAGE_FADE_OUT, timeOut);
+            }
+        }
+        isShowing = true;
+    }
 
+    private void hideUnsupportedUI() {
+        if (isDragging) {
+
+        }
+        if (isLandScape()) {
+            setInvisible(ivBack, ivShare, ivPlay, llProgressbar, vDim);
+        }
+        if (!isLandScape()) {
+            setInvisible(ivPlay, llProgressbar, vDim);
+        }
+        isShowing = false;
     }
 
     @Override
@@ -129,8 +161,19 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         } else if (view.getId() == R.id.iv_fullscreen) {
             doToggleFullscreen();
         } else if (view.getId() == R.id.iv_share) {
-            new AlertDialog.Builder(getContext()).setMessage("what").setTitle("hell").show();
-            Log.i(TAG, "onClick: ui " + getSystemUiVisibility());
+            controller.onShareClick();
+        }
+    }
+
+    private void setInvisible(View... views) {
+        for (View view : views) {
+            view.setVisibility(GONE);
+        }
+    }
+
+    private void setVisible(View... views) {
+        for (View view : views) {
+            view.setVisibility(VISIBLE);
         }
     }
 
@@ -140,7 +183,7 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
             LinearLayout.LayoutParams videoFullscreenLayoutParam =
                     new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             setLayoutParams(videoFullscreenLayoutParam);
-            controller.getOtherView().setVisibility(View.GONE);
+            setInvisible(controller.getOtherView());
             View decorView = ((Activity) getContext()).getWindow().getDecorView();
             decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -153,10 +196,11 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
                     LayoutParams.MATCH_PARENT, videoViewHeight);
             this.setLayoutParams(original);
             ((Activity) getContext()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-            controller.getOtherView().setVisibility(View.VISIBLE);
+            setVisible(controller.getOtherView());
             View decorView = ((Activity) getContext()).getWindow().getDecorView();
             decorView.setSystemUiVisibility(defaultSystemUiVisiblity);
         }
+
     }
 
     /**
@@ -224,22 +268,24 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
             return;
         }
         long duration = controller.getDuration();
-        long newposition = (duration * progress) / 1000L;
-        controller.seekTo((int) newposition);
+        long newPosition = (duration * progress) / 1000L;
+        controller.seekTo((int) newPosition);
         if (tvCurrentTime != null)
-            tvCurrentTime.setText(stringForTime((int) newposition));
+            tvCurrentTime.setText(stringForTime((int) newPosition));
     }
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
         isDragging = true;
         messageHandler.removeMessages(Constant.MESSAGE_SHOW_PROGRESS);
+        messageHandler.removeMessages(Constant.MESSAGE_FADE_OUT);
     }
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
         isDragging = false;
         messageHandler.sendEmptyMessage(Constant.MESSAGE_SHOW_PROGRESS);
+        messageHandler.sendEmptyMessageDelayed(Constant.MESSAGE_FADE_OUT, defaultTime);
     }
 
     private void doPauseResume() {
@@ -272,6 +318,14 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
             View decorView = ((Activity) getContext()).getWindow().getDecorView();
             decorView.setSystemUiVisibility(defaultSystemUiVisiblity);
         }
+    }
+
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+            show();
+        }
+        return true;
     }
 
     /**
@@ -331,6 +385,8 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         View getOtherView();
 
         void onBackClick();
+
+        void onShareClick();
     }
 
     public void setVideoCompleted() {
@@ -350,21 +406,25 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
                     sendMessageDelayed(msg, 1000 - (pos % 1000));
                     break;
                 case Constant.MESSAGE_IS_PLAYING:
-                    isPlaying = controller.isPlaying();
                     updatePlayIcon();
-                    if (isLandScape()&&isCompleted) {
-                        rlshare.setVisibility(VISIBLE);
+                    if (isLandScape() && isCompleted) {
+                        setVisible(rlshare, ivBack);
+                        ivBack.setImageResource(R.drawable.ic_index_video_close);
                     } else {
-                        rlshare.setVisibility(GONE);
+                        setInvisible(rlshare);
+                        ivBack.setImageResource(R.drawable.ic_index_video_back);
                     }
-                    if (isPlaying) {
+                    if (!isLandScape() && isCompleted) {
+                        setVisible(ivBack, ivShare, ivPlay, llProgressbar);
+                    }
+
+                    if (controller.isPlaying()) {
                         isCompleted = false;
-                        vDim.setVisibility(GONE);
-                    } else {
-                        vDim.setVisibility(VISIBLE);
                     }
                     sendEmptyMessage(Constant.MESSAGE_IS_PLAYING);
-                    Log.i(TAG, "handleMessage: current: " + controller.getCurrentPosition() + "  /  " + controller.getDuration());
+                    break;
+                case Constant.MESSAGE_FADE_OUT:
+                    hideUnsupportedUI();
                     break;
             }
         }

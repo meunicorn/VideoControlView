@@ -19,17 +19,14 @@ public class VerticalTextView extends TextView {
 
 	public VerticalTextView(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		// TODO Auto-generated constructor stub
 	}
 
 	public VerticalTextView(Context context) {
 		super(context);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public void setText(CharSequence text, BufferType type) {
-		// TODO Auto-generated method stub
 		if ("".equals(text) || text == null || text.length() == 0) {
 			return;
 		}
