@@ -135,10 +135,8 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         isShowing = true;
     }
 
+    // TODO: 2016/8/22 处理播放完后，点击播放后不隐藏的bug
     private void hideUnsupportedUI() {
-        if (isDragging) {
-
-        }
         if (isLandScape()) {
             setInvisible(ivBack, ivShare, ivPlay, llProgressbar, vDim);
         }
