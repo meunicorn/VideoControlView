@@ -14,7 +14,7 @@ import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 /**
- * Created by Fancy on 2016/8/17.
+ * Created by Fancy on 2016/8/17
  */
 public class MainPresenter extends BasePresenter<MainMvpView> {
     public void getVideoList(int page, String type, String fkey) {
