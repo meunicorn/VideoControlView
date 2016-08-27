@@ -1,6 +1,8 @@
 package com.meunicorn.mvpvideoplayer.videodetail;
 
+import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.design.widget.BottomSheetDialog;
 import android.support.v7.app.AlertDialog;
@@ -18,6 +20,7 @@ import com.meunicorn.videocontrolview.VideoControlView;
 
 import java.io.IOException;
 
+import timber.log.Timber;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
@@ -51,7 +54,7 @@ public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.C
     }
 
     private void initView() {
-        bottomSheetView = LayoutInflater.from(this).inflate(R.layout.item_video,null);
+        bottomSheetView = LayoutInflater.from(this).inflate(R.layout.item_video, null);
         TextView tvBottom = (TextView) bottomSheetView.findViewById(R.id.tv_video_title);
         tvBottom.setText(title);
         SimpleDraweeView sdvBottom = (SimpleDraweeView) bottomSheetView.findViewById(R.id.sdv_video_cover);
@@ -75,6 +78,20 @@ public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.C
             @Override
             public void onCompletion(IMediaPlayer iMediaPlayer) {
                 vcvControl.setVideoCompleted();
+            }
+        });
+        player.setOnBufferingUpdateListener(new IMediaPlayer.OnBufferingUpdateListener() {
+            @Override
+            public void onBufferingUpdate(IMediaPlayer iMediaPlayer, int i) {
+                Timber.e("percent : %d", i);
+                vcvControl.setCachePercentage(i);
+            }
+        });
+        player.setOnErrorListener(new IMediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(IMediaPlayer iMediaPlayer, int what, int extra) {
+                Timber.e("ImediaPlaer Error - > \n isplaying : %s \n what : %d \n extra : %d", iMediaPlayer.isPlaying(), what, extra);
+                return true;
             }
         });
         svVideo = new SurfaceView(this);
@@ -134,10 +151,6 @@ public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.C
         return player.getDuration();
     }
 
-    @Override
-    public long getCachePercentage() {
-        return 0;
-    }
 
     @Override
     public View getOtherView() {
@@ -159,14 +172,31 @@ public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.C
     }
 
     @Override
+    protected void onPause() {
+        player.pause();
+        super.onPause();
+    }
+
+    @Override
     protected void onDestroy() {
-        player.stop();
-        player.release();
+        stopCallback();
         super.onDestroy();
+    }
+
+    private void stopCallback() {
+        if (player != null) {
+            player.stop();
+            player.release();
+            player = null;
+            AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            am.abandonAudioFocus(null);
+        }
+        vcvControl.release();
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
     }
+
 }
