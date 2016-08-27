@@ -7,6 +7,7 @@ import android.content.res.Configuration;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -45,6 +46,15 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
     private int videoViewHeight = 0;
     private int defaultSystemUiVisiblity = 0;
     private long defaultTime = 3000;
+    private int cachePercentage = 0;
+
+    public int getCachePercentage() {
+        return cachePercentage;
+    }
+
+    public void setCachePercentage(int cachePercentage) {
+        this.cachePercentage = cachePercentage;
+    }
 
     /**
      * Instantiates a new Video control view.
@@ -234,7 +244,7 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
                 long pos = 1000L * position / duration;
                 sbProgress.setProgress((int) pos);
             }
-            double percent = controller.getCachePercentage();
+            double percent = getCachePercentage();
             sbProgress.setSecondaryProgress((int) (percent * 10));
         }
 
@@ -373,13 +383,6 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
          */
         long getDuration();
 
-        /**
-         * 传入缓存的进度，100进制。
-         *
-         * @return the cache percentage
-         */
-        long getCachePercentage();
-
         View getOtherView();
 
         void onBackClick();
@@ -426,5 +429,11 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
                     break;
             }
         }
+    }
+    public void release(){
+        messageHandler.removeMessages(Constant.MESSAGE_FADE_OUT);
+        messageHandler.removeMessages(Constant.MESSAGE_SHOW_PROGRESS);
+        messageHandler.removeMessages(Constant.MESSAGE_IS_PLAYING);
+
     }
 }
