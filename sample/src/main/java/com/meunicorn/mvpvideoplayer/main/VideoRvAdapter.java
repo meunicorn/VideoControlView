@@ -24,6 +24,7 @@ import rx.subjects.PublishSubject;
  */
 public class VideoRvAdapter extends RecyclerView.Adapter<VideoRvAdapter.MyViewHolder> {
     private final PublishSubject<Video.DataEntity.ListEntity> onClickSubject = PublishSubject.create();
+    private final PublishSubject<Video.DataEntity.ListEntity> onLongClickSubject = PublishSubject.create();
     private Context context;
     private List<Video.DataEntity.ListEntity> videoList;
     private View view;
@@ -50,6 +51,13 @@ public class VideoRvAdapter extends RecyclerView.Adapter<VideoRvAdapter.MyViewHo
                 onClickSubject.onNext(videoList.get(position));
             }
         });
+        holder.cvVideo.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                onLongClickSubject.onNext(videoList.get(position));
+                return true;
+            }
+        });
         setAnimation(holder.cvVideo, position);
     }
 
@@ -60,6 +68,10 @@ public class VideoRvAdapter extends RecyclerView.Adapter<VideoRvAdapter.MyViewHo
 
     public Observable<Video.DataEntity.ListEntity> onItemClick() {
         return onClickSubject.asObservable();
+    }
+
+    public Observable<Video.DataEntity.ListEntity> onItemLongClick() {
+        return onLongClickSubject.asObservable();
     }
 
     private void setAnimation(View viewToAnimate, int position) {
@@ -78,9 +90,9 @@ public class VideoRvAdapter extends RecyclerView.Adapter<VideoRvAdapter.MyViewHo
 
         public MyViewHolder(View itemView) {
             super(itemView);
-            sdvCover= (SimpleDraweeView) itemView.findViewById(R.id.sdv_video_cover);
-            tvTitle= (TextView) itemView.findViewById(R.id.tv_video_title);
-            cvVideo= (CardView) itemView.findViewById(R.id.cv_video);
+            sdvCover = (SimpleDraweeView) itemView.findViewById(R.id.sdv_video_cover);
+            tvTitle = (TextView) itemView.findViewById(R.id.tv_video_title);
+            cvVideo = (CardView) itemView.findViewById(R.id.cv_video);
         }
     }
 }

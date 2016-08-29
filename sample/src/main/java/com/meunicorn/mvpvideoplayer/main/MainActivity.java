@@ -17,6 +17,7 @@ import com.meunicorn.mvpvideoplayer.BaseActivity;
 import com.meunicorn.mvpvideoplayer.R;
 import com.meunicorn.mvpvideoplayer.main.bean.Video;
 import com.meunicorn.mvpvideoplayer.videodetail.VideoDetailActivity;
+import com.meunicorn.mvpvideoplayer.videodetail.VideoDetailActivityPro;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,6 +71,16 @@ public class MainActivity extends BaseActivity implements MainMvpView, View.OnCl
             @Override
             public void call(Video.DataEntity.ListEntity listEntity) {
                 Intent intent = new Intent(MainActivity.this, VideoDetailActivity.class);
+                intent.putExtra("url", listEntity.getVideo_url());
+                intent.putExtra("title", listEntity.getTitle());
+                intent.putExtra("imgUrl", listEntity.getImg_url());
+                startActivity(intent);
+            }
+        });
+        adapter.onItemLongClick().subscribe(new Action1<Video.DataEntity.ListEntity>() {
+            @Override
+            public void call(Video.DataEntity.ListEntity listEntity) {
+                Intent intent = new Intent(MainActivity.this, VideoDetailActivityPro.class);
                 intent.putExtra("url", listEntity.getVideo_url());
                 intent.putExtra("title", listEntity.getTitle());
                 intent.putExtra("imgUrl", listEntity.getImg_url());

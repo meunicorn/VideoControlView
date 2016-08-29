@@ -24,6 +24,9 @@
         <activity android:name=".videodetail.VideoDetailActivity"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="portrait"/>
+        <activity android:name=".videodetail.VideoDetailActivityPro"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>
