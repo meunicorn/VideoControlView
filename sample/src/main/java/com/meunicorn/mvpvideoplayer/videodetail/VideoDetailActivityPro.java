@@ -1,8 +1,6 @@
 package com.meunicorn.mvpvideoplayer.videodetail;
 
-import android.content.Context;
 import android.content.Intent;
-import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.design.widget.BottomSheetDialog;
 import android.support.v7.app.AlertDialog;
@@ -24,7 +22,8 @@ import timber.log.Timber;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
-public class VideoDetailActivityPro extends BaseActivity implements SurfaceHolder.Callback, VideoControlViewPro.VideoController {
+public class VideoDetailActivityPro extends BaseActivity implements SurfaceHolder.Callback,
+        VideoControlViewPro.VideoController {
     private VideoControlViewPro vcvControl;
     private FrameLayout flVideo, flOtherView;
     private SurfaceView svVideo;
@@ -74,12 +73,6 @@ public class VideoDetailActivityPro extends BaseActivity implements SurfaceHolde
 
     private void initVideo() {
         player = new IjkMediaPlayer();
-        player.setOnCompletionListener(new IMediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(IMediaPlayer iMediaPlayer) {
-                vcvControl.setVideoCompleted();
-            }
-        });
         player.setOnErrorListener(new IMediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(IMediaPlayer iMediaPlayer, int what, int extra) {
@@ -135,6 +128,11 @@ public class VideoDetailActivityPro extends BaseActivity implements SurfaceHolde
     }
 
     @Override
+    public TextView getTestText() {
+        return (TextView) findViewById(R.id.tv_test);
+    }
+
+    @Override
     protected void onPause() {
         player.pause();
         super.onPause();
@@ -142,19 +140,8 @@ public class VideoDetailActivityPro extends BaseActivity implements SurfaceHolde
 
     @Override
     protected void onDestroy() {
-        stopCallback();
-        super.onDestroy();
-    }
-
-    private void stopCallback() {
-        if (player != null) {
-            player.stop();
-            player.release();
-            player = null;
-            AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            am.abandonAudioFocus(null);
-        }
         vcvControl.release();
+        super.onDestroy();
     }
 
     @Override

@@ -1,9 +1,11 @@
 package com.meunicorn.videocontrolview;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
@@ -25,7 +27,9 @@ import tv.danmaku.ijk.media.player.IjkMediaPlayer;
  * Created by Fancy on 2016/8/17
  * 如果要设置横屏状态下播放结束时显示分享界面，请在Activity/Fragment中调用此类中的方法 setVideoCompleted()
  */
-public class VideoControlViewPro extends FrameLayout implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, View.OnSystemUiVisibilityChangeListener, View.OnTouchListener, IMediaPlayer.OnBufferingUpdateListener {
+public class VideoControlViewPro extends FrameLayout implements View.OnClickListener,
+        SeekBar.OnSeekBarChangeListener, View.OnSystemUiVisibilityChangeListener,
+        View.OnTouchListener, IMediaPlayer.OnBufferingUpdateListener, IMediaPlayer.OnCompletionListener {
     private String TAG = getClass().getSimpleName();
     private View controlView;
     private View videoView;
@@ -49,7 +53,6 @@ public class VideoControlViewPro extends FrameLayout implements View.OnClickList
     private int videoViewHeight = 0;
     private int defaultSystemUiVisiblity = 0;
     private long defaultTime = 3000;
-    private int cachePercentage = 0;
 
 
     /**
@@ -100,7 +103,9 @@ public class VideoControlViewPro extends FrameLayout implements View.OnClickList
     /**
      * Attach video view.
      *
-     * @param videoView the view
+     * @param videoView  the view
+     * @param player     the player
+     * @param controller the controller
      */
     public void attachVideoView(View videoView, IjkMediaPlayer player, VideoController controller) {
         addView(videoView, 0);
@@ -117,13 +122,22 @@ public class VideoControlViewPro extends FrameLayout implements View.OnClickList
         messageHandler.sendEmptyMessage(Constant.MESSAGE_SHOW_PROGRESS);
         messageHandler.sendEmptyMessage(Constant.MESSAGE_IS_PLAYING);
         player.setOnBufferingUpdateListener(this);
+        player.setOnCompletionListener(this);
         setOnTouchListener(this);
     }
 
+    /**
+     * Show.
+     */
     public void show() {
         show(defaultTime);
     }
 
+    /**
+     * Show.
+     *
+     * @param timeOut the time out
+     */
     public void show(long timeOut) {
         if (isShowing) {
             hideUnsupportedUI();
@@ -250,6 +264,11 @@ public class VideoControlViewPro extends FrameLayout implements View.OnClickList
         return position;
     }
 
+    /**
+     * Is land scape boolean.
+     *
+     * @return the boolean
+     */
     public boolean isLandScape() {
         // 横屏 true , 竖屏 false
         Configuration mConfiguration = this.getResources().getConfiguration(); // 获取设置的配置信息
@@ -336,6 +355,28 @@ public class VideoControlViewPro extends FrameLayout implements View.OnClickList
         sbProgress.setSecondaryProgress(percent * 10);
     }
 
+    @Override
+    public void onCompletion(IMediaPlayer iMediaPlayer) {
+        isCompleted = true;
+    }
+
+    /**
+     * Release.
+     */
+    public void release() {
+        messageHandler.removeMessages(Constant.MESSAGE_FADE_OUT);
+        messageHandler.removeMessages(Constant.MESSAGE_SHOW_PROGRESS);
+        messageHandler.removeMessages(Constant.MESSAGE_IS_PLAYING);
+
+        if (player != null) {
+            player.stop();
+            player.release();
+            player = null;
+            AudioManager am = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
+            am.abandonAudioFocus(null);
+        }
+    }
+
     /**
      * The interface Video controller.
      */
@@ -347,21 +388,37 @@ public class VideoControlViewPro extends FrameLayout implements View.OnClickList
          */
         long getDuration();
 
+        /**
+         * Gets other view.
+         *
+         * @return the other view
+         */
         View getOtherView();
 
+        /**
+         * On back click.
+         */
         void onBackClick();
 
+        /**
+         * On share click.
+         */
         void onShareClick();
-    }
 
-    public void setVideoCompleted() {
-        isCompleted = true;
+
+        /**
+         * 这个接口用于显示当前测试的数据。
+         *
+         * @return the test text
+         */
+        TextView getTestText();
     }
 
     /**
      * The type Message handler.
      */
     class MessageHandler extends Handler {
+        @SuppressLint("SetTextI18n")
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -386,6 +443,11 @@ public class VideoControlViewPro extends FrameLayout implements View.OnClickList
                     if (player.isPlaying()) {
                         isCompleted = false;
                     }
+                    controller.getTestText().setText(
+                            "isPlaying : " + player.isPlaying() + "\n"
+                                    + "isCompleted :" + isCompleted + "\n"
+                                    + "Duration : " + player.getCurrentPosition() + " / " + player.getDuration()
+                    );
                     sendEmptyMessage(Constant.MESSAGE_IS_PLAYING);
                     break;
                 case Constant.MESSAGE_FADE_OUT:
@@ -393,12 +455,5 @@ public class VideoControlViewPro extends FrameLayout implements View.OnClickList
                     break;
             }
         }
-    }
-
-    public void release() {
-        messageHandler.removeMessages(Constant.MESSAGE_FADE_OUT);
-        messageHandler.removeMessages(Constant.MESSAGE_SHOW_PROGRESS);
-        messageHandler.removeMessages(Constant.MESSAGE_IS_PLAYING);
-
     }
 }
