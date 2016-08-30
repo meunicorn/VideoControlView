@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -24,6 +25,7 @@ import android.widget.TextView;
  * 如果要设置横屏状态下播放结束时显示分享界面，请在Activity/Fragment中调用此类中的方法 setVideoCompleted()
  */
 public class VideoControlView extends FrameLayout implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, View.OnSystemUiVisibilityChangeListener, View.OnTouchListener {
+    GestureDetector gestureDetector;
     private String TAG = getClass().getSimpleName();
     private View controlView;
     private View videoView;
@@ -48,14 +50,6 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
     private long defaultTime = 3000;
     private int cachePercentage = 0;
 
-    public int getCachePercentage() {
-        return cachePercentage;
-    }
-
-    public void setCachePercentage(int cachePercentage) {
-        this.cachePercentage = cachePercentage;
-    }
-
     /**
      * Instantiates a new Video control view.
      *
@@ -76,6 +70,14 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         controlView = LayoutInflater.from(context).inflate(R.layout.layout_video_control, null);
         addView(controlView);
         initControlUI();
+    }
+
+    public int getCachePercentage() {
+        return cachePercentage;
+    }
+
+    public void setCachePercentage(int cachePercentage) {
+        this.cachePercentage = cachePercentage;
     }
 
     private void initControlUI() {
@@ -114,6 +116,7 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         startListener();
         videoViewHeight = getLayoutParams().height;
         defaultSystemUiVisiblity = getSystemUiVisibility();
+        gestureDetector = new GestureDetector(getContext(), new VideoGestureListener());
         show();
     }
 
@@ -121,6 +124,7 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         messageHandler.sendEmptyMessage(Constant.MESSAGE_SHOW_PROGRESS);
         messageHandler.sendEmptyMessage(Constant.MESSAGE_IS_PLAYING);
         setOnTouchListener(this);
+        videoView.setOnTouchListener(this);
     }
 
     public void show() {
@@ -330,10 +334,23 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
+        if (gestureDetector.onTouchEvent(motionEvent)) {
+            return gestureDetector.onTouchEvent(motionEvent);
+        }
         if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
             show();
         }
         return true;
+    }
+
+    public void setVideoCompleted() {
+        isCompleted = true;
+    }
+
+    public void release() {
+        messageHandler.removeMessages(Constant.MESSAGE_FADE_OUT);
+        messageHandler.removeMessages(Constant.MESSAGE_SHOW_PROGRESS);
+        messageHandler.removeMessages(Constant.MESSAGE_IS_PLAYING);
     }
 
     /**
@@ -390,10 +407,6 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         void onShareClick();
     }
 
-    public void setVideoCompleted() {
-        isCompleted = true;
-    }
-
     /**
      * The type Message handler.
      */
@@ -430,10 +443,18 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
             }
         }
     }
-    public void release(){
-        messageHandler.removeMessages(Constant.MESSAGE_FADE_OUT);
-        messageHandler.removeMessages(Constant.MESSAGE_SHOW_PROGRESS);
-        messageHandler.removeMessages(Constant.MESSAGE_IS_PLAYING);
 
+    public class VideoGestureListener extends GestureDetector.SimpleOnGestureListener {
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            Log.i(TAG, "onDoubleTap: !");
+            doToggleFullscreen();
+            return true;
+        }
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return true;
+        }
     }
 }
