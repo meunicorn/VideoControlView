@@ -447,13 +447,29 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
     public class VideoGestureListener extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onDoubleTap(MotionEvent e) {
-            Log.i(TAG, "onDoubleTap: !");
             doToggleFullscreen();
             return true;
         }
 
         @Override
         public boolean onDown(MotionEvent e) {
+            return true;
+        }
+
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            boolean isVolumn = false;
+            if (e1.getX() < getWidth() * 0.5) {
+                isVolumn = true;
+            } else {
+                isVolumn = false;
+            }
+            if (isVolumn){
+                if (e2.getY()-e1.getY()>0){
+                    //down
+                }
+            }
+            // TODO: 2016/8/30 滑动拖动进度条。上下滑动处理声音以及亮度
             return true;
         }
     }
