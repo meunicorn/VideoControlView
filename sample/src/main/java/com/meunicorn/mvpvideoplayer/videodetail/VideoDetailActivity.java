@@ -83,7 +83,6 @@ public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.C
         player.setOnBufferingUpdateListener(new IMediaPlayer.OnBufferingUpdateListener() {
             @Override
             public void onBufferingUpdate(IMediaPlayer iMediaPlayer, int i) {
-                Timber.e("percent : %d", i);
                 vcvControl.setCachePercentage(i);
             }
         });
@@ -91,6 +90,20 @@ public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.C
             @Override
             public boolean onError(IMediaPlayer iMediaPlayer, int what, int extra) {
                 Timber.e("ImediaPlaer Error - > \n isplaying : %s \n what : %d \n extra : %d", iMediaPlayer.isPlaying(), what, extra);
+                return true;
+            }
+        });
+        player.setOnInfoListener(new IMediaPlayer.OnInfoListener() {
+            @Override
+            public boolean onInfo(IMediaPlayer iMediaPlayer, int what, int extra) {
+                switch (what) {
+                    case IMediaPlayer.MEDIA_INFO_BUFFERING_START:
+                        vcvControl.startBuffering();
+                        break;
+                    case IMediaPlayer.MEDIA_INFO_BUFFERING_END:
+                        vcvControl.endBuffering();
+                        break;
+                }
                 return true;
             }
         });
@@ -104,6 +117,7 @@ public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.C
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         player.setDisplay(surfaceHolder);
         player.prepareAsync();
+
     }
 
     @Override

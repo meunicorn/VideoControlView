@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.meunicorn.mvpvideoplayer"
-        minSdkVersion 21
+        minSdkVersion 15
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
@@ -38,7 +38,6 @@ dependencies {
     compile 'com.facebook.fresco:imagepipeline-okhttp3:0.12.0'
     compile 'tv.danmaku.ijk.media:ijkplayer-java:0.6.1'
     compile 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.6.1'
-    compile 'tv.danmaku.ijk.media:ijkplayer-x86_64:0.6.1'
     compile 'com.jakewharton.timber:timber:4.2.0'
     compile project(':videocontrolview')
 }

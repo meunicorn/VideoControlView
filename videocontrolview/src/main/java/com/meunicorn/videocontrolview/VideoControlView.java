@@ -7,8 +7,6 @@ import android.content.res.Configuration;
 import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -24,13 +23,15 @@ import android.widget.TextView;
  * Created by Fancy on 2016/8/17
  * 如果要设置横屏状态下播放结束时显示分享界面，请在Activity/Fragment中调用此类中的方法 setVideoCompleted()
  */
-public class VideoControlView extends FrameLayout implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, View.OnSystemUiVisibilityChangeListener, View.OnTouchListener {
-    GestureDetector gestureDetector;
+public class VideoControlView extends FrameLayout implements View.OnClickListener,
+        SeekBar.OnSeekBarChangeListener, View.OnSystemUiVisibilityChangeListener,
+        View.OnTouchListener {
     private String TAG = getClass().getSimpleName();
     private View controlView;
     private View videoView;
     private VideoController controller;
     private SeekBar sbProgress;
+    private ProgressBar pbLoading;
     private ImageView ivPlay;
     private ImageView ivBack;
     private ImageView ivShare;
@@ -91,6 +92,7 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         rlshare = (RelativeLayout) controlView.findViewById(R.id.rl_share);
         rlController = (RelativeLayout) controlView.findViewById(R.id.rl_controller);
         llProgressbar = (LinearLayout) controlView.findViewById(R.id.ll_progressbar);
+        pbLoading = (ProgressBar) controlView.findViewById(R.id.pb_loading);
 
         vDim = controlView.findViewById(R.id.v_dim);
         sbProgress.setMax(1000);
@@ -116,7 +118,6 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         startListener();
         videoViewHeight = getLayoutParams().height;
         defaultSystemUiVisiblity = getSystemUiVisibility();
-        gestureDetector = new GestureDetector(getContext(), new VideoGestureListener());
         show();
     }
 
@@ -124,7 +125,6 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         messageHandler.sendEmptyMessage(Constant.MESSAGE_SHOW_PROGRESS);
         messageHandler.sendEmptyMessage(Constant.MESSAGE_IS_PLAYING);
         setOnTouchListener(this);
-        videoView.setOnTouchListener(this);
     }
 
     public void show() {
@@ -334,9 +334,6 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
-        if (gestureDetector.onTouchEvent(motionEvent)) {
-            return gestureDetector.onTouchEvent(motionEvent);
-        }
         if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
             show();
         }
@@ -351,6 +348,30 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
         messageHandler.removeMessages(Constant.MESSAGE_FADE_OUT);
         messageHandler.removeMessages(Constant.MESSAGE_SHOW_PROGRESS);
         messageHandler.removeMessages(Constant.MESSAGE_IS_PLAYING);
+
+    }
+
+    /**
+     * 加载视频时调用<br>
+     * 显示一个加载的进度条
+     */
+    public void startBuffering() {
+        //如果在拖拽进度条，就不显示了。
+        if (isDragging) {
+            return;
+        }
+        pbLoading.setVisibility(VISIBLE);
+        setInvisible(ivPlay);
+    }
+
+    /**
+     * 加载完视频时调用
+     */
+    public void endBuffering() {
+        if (isDragging) {
+            return;
+        }
+        pbLoading.setVisibility(GONE);
     }
 
     /**
@@ -441,36 +462,6 @@ public class VideoControlView extends FrameLayout implements View.OnClickListene
                     hideUnsupportedUI();
                     break;
             }
-        }
-    }
-
-    public class VideoGestureListener extends GestureDetector.SimpleOnGestureListener {
-        @Override
-        public boolean onDoubleTap(MotionEvent e) {
-            doToggleFullscreen();
-            return true;
-        }
-
-        @Override
-        public boolean onDown(MotionEvent e) {
-            return true;
-        }
-
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            boolean isVolumn = false;
-            if (e1.getX() < getWidth() * 0.5) {
-                isVolumn = true;
-            } else {
-                isVolumn = false;
-            }
-            if (isVolumn){
-                if (e2.getY()-e1.getY()>0){
-                    //down
-                }
-            }
-            // TODO: 2016/8/30 滑动拖动进度条。上下滑动处理声音以及亮度
-            return true;
         }
     }
 }
