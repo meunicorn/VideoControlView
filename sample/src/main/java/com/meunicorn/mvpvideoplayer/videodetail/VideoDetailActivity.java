@@ -50,6 +50,7 @@ public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.C
         } catch (IOException e) {
             e.printStackTrace();
         }
+        player.prepareAsync();
         player.setLogEnabled(false);
     }
 
@@ -116,8 +117,6 @@ public class VideoDetailActivity extends BaseActivity implements SurfaceHolder.C
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         player.setDisplay(surfaceHolder);
-        player.prepareAsync();
-
     }
 
     @Override
